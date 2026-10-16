@@ -28,6 +28,8 @@ function getShieldSnapshot(): ShieldSnapshot {
   };
 }
 
+const shieldEvents = new EventTarget();
+
 function drawMeter() {
   const shield = getShieldSnapshot();
 
@@ -41,6 +43,10 @@ function drawMeter() {
   ctx.fillText(`${shield.charge} / ${shield.capacity} shield`, 12, 100);
   readout.textContent = `Shield charge: ${shield.charge} / ${shield.capacity}`;
 }
+
+shieldEvents.addEventListener("shieldchange", () => {
+  drawMeter();
+});
 
 function updateStats() {
   panelUpdates++;
@@ -60,7 +66,8 @@ function setCount(next: number) {
   const bounded = Math.max(0, Math.min(10, next));
   if (bounded === count) return;
   count = bounded;
-  drawMeter();
+
+  shieldEvents.dispatchEvent(new Event("shieldchange"));
   if (panel) updateStats();
 }
 
