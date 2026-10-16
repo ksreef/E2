@@ -7,6 +7,12 @@ const readout = document.querySelector<HTMLParagraphElement>(
 )!;
 let assignedCrew = 2;
 
+type DisplayRow = {
+  label: string;
+  color: string;
+  value: number;
+};
+
 type ShiftResults = {
   assignedCrew: number;
   production: number;
@@ -35,13 +41,31 @@ function renderAllocation() {
   ctx.fillStyle = "#233e43";
   ctx.font = "14px system-ui";
   ctx.fillText(`Producers: ${shift.assignedCrew} / 6`, 18, 76);
-  ctx.fillText(`Production: ${shift.production}`, 18, 102);
-  ctx.fillStyle = "#27766b";
-  ctx.fillRect(18, 110, shift.production * 14, 20);
-  ctx.fillStyle = "#233e43";
-  ctx.fillText(`Consumption: ${shift.consumption}`, 18, 154);
-  ctx.fillStyle = "#a44d23";
-  ctx.fillRect(18, 162, shift.consumption * 14, 20);
+
+  const rows: DisplayRow[] = [
+    {
+      label: "Production",
+      color: "#27766b",
+      value: shift.production,
+    },
+    {
+      label: "Consumption",
+      color: "#a44d23",
+      value: shift.consumption,
+    },
+  ];
+
+  for (const [index, row] of rows.entries()) {
+    const labelY = 102 + index * 52;
+    const barY = 110 + index * 52;
+
+    ctx.fillStyle = "#233e43";
+    ctx.fillText(`${row.label}: ${row.value}`, 18, labelY);
+
+    ctx.fillStyle = row.color;
+    ctx.fillRect(18, barY, row.value * 14, 20);
+  }
+
   readout.textContent =
     `Assigned: ${shift.assignedCrew}/6 · Production: ${shift.production} · Consumption: ${shift.consumption} · Balance: ${
       shift.balance > 0 ? "+" : ""
