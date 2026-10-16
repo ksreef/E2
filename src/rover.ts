@@ -18,6 +18,17 @@ const directions: Direction[] = [
 ];
 
 type Command = "Forward" | "Right";
+
+const pendingList = document.querySelector<HTMLOListElement>(
+  "#rover-pending",
+)!;
+const queueStatus = document.querySelector<HTMLParagraphElement>(
+  "#rover-queue-status",
+)!;
+const runButton = document.querySelector<HTMLButtonElement>("#rover-run")!;
+const clearButton = document.querySelector<HTMLButtonElement>("#rover-clear")!;
+
+const pendingCommands: Command[] = [];
 let x = 2;
 let y = 2;
 let direction = 0;
@@ -60,16 +71,54 @@ function executeCommand(command: Command) {
   drawRover();
 }
 
+function renderPendingCommands() {
+  pendingList.replaceChildren();
+
+  for (const command of pendingCommands) {
+    const item = document.createElement("li");
+    item.textContent = command;
+    pendingList.append(item);
+  }
+
+  runButton.disabled = pendingCommands.length === 0;
+  clearButton.disabled = pendingCommands.length === 0;
+
+  queueStatus.textContent = pendingCommands.length === 0
+    ? "Empty · no pending commands"
+    : `${pendingCommands.length} command(s) pending`;
+}
+
+runButton.onclick = () => {
+  while (pendingCommands.length > 0) {
+    const command = pendingCommands.shift()!;
+    executeCommand(command);
+  }
+  renderPendingCommands();
+};
+
+clearButton.onclick = () => {
+  pendingCommands.length = 0;
+  renderPendingCommands();
+};
+
 document.querySelector<HTMLButtonElement>("#rover-forward")!.onclick = () => {
-  executeCommand("Forward");
+  pendingCommands.push("Forward");
+  renderPendingCommands();
 };
+
 document.querySelector<HTMLButtonElement>("#rover-right")!.onclick = () => {
-  executeCommand("Right");
+  pendingCommands.push("Right");
+  renderPendingCommands();
 };
+
 document.querySelector<HTMLButtonElement>("#rover-reset")!.onclick = () => {
   x = 2;
   y = 2;
   direction = 0;
+  pendingCommands.length = 0;
+
   drawRover();
+  renderPendingCommands();
 };
 drawRover();
+renderPendingCommands();
